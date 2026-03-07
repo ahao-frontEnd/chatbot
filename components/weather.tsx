@@ -118,6 +118,9 @@ type WeatherAtLocation = {
     sunset: string[];
   };
 };
+type WeatherError = {
+  error: string;
+};
 
 const SAMPLE = {
   latitude: 37.763_283,
@@ -281,8 +284,28 @@ function n(num: number): number {
 export function Weather({
   weatherAtLocation = SAMPLE,
 }: {
-  weatherAtLocation?: WeatherAtLocation;
+  weatherAtLocation?: WeatherAtLocation | WeatherError;
 }) {
+  if (!weatherAtLocation || "error" in weatherAtLocation) {
+    return (
+      <div className="w-full rounded-2xl border border-red-200 bg-red-50 p-4 text-red-600">
+        {weatherAtLocation?.error || "Weather data is unavailable right now."}
+      </div>
+    );
+  }
+
+  if (
+    !weatherAtLocation.current?.temperature_2m ||
+    !weatherAtLocation.hourly?.temperature_2m?.length ||
+    !weatherAtLocation.daily?.sunrise?.length ||
+    !weatherAtLocation.daily?.sunset?.length
+  ) {
+    return (
+      <div className="w-full rounded-2xl border border-red-200 bg-red-50 p-4 text-red-600">
+        Weather data is incomplete. Please try again.
+      </div>
+    );
+  }
   const currentHigh = Math.max(
     ...weatherAtLocation.hourly.temperature_2m.slice(0, 24)
   );

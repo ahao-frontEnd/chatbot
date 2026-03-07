@@ -32,6 +32,10 @@
     "source.fixAll.biome": "explicit",
     "source.organizeImports.biome": "explicit"
   },
+  // 添加 DEEPSEEK 到 cSpell 的单词列表中，表示这个单词是正确的，不会被标记为拼写错误
+  "cSpell.words": [
+    "DEEPSEEK"
+  ],
   "[html]": {
     "editor.defaultFormatter": "biomejs.biome"
   },

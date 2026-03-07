@@ -69,3 +69,16 @@ pnpm dev
 ```
 
 Your app template should now be running on [localhost:3000](http://localhost:3000).
+
+## 本地生成 AUTH_SECRET（简体中文）
+
+Auth.js 需要 `AUTH_SECRET`。如果本地启动报错缺少 `secret`，可以用脚本自动生成并写入 `.env.local`。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/gen-auth-secret.ps1
+```
+
+说明：
+- 如果 `.env.local` 不存在会自动创建
+- 如果已存在 `AUTH_SECRET` 会跳过，不会覆盖
+- 使用系统安全随机数生成 32 字节并写入

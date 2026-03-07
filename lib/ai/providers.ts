@@ -1,13 +1,8 @@
-import { gateway } from "@ai-sdk/gateway";
-import {
-  customProvider,
-  extractReasoningMiddleware,
-  wrapLanguageModel,
-} from "ai";
+import { customProvider } from "ai";
+import { deepseek } from "@ai-sdk/deepseek";
 import { isTestEnvironment } from "../constants";
 
-const THINKING_SUFFIX_REGEX = /-thinking$/;
-
+// In tests, use the mocked models mapping.
 export const myProvider = isTestEnvironment
   ? (() => {
       const {
@@ -27,37 +22,30 @@ export const myProvider = isTestEnvironment
     })()
   : null;
 
+function resolveDeepSeekModelId(modelId: string) {
+  const isReasoningModel =
+    modelId.endsWith("-thinking") ||
+    (modelId.includes("reasoning") && !modelId.includes("non-reasoning"));
+  return isReasoningModel ? "deepseek-reasoner" : "deepseek-chat";
+}
+
 export function getLanguageModel(modelId: string) {
   if (isTestEnvironment && myProvider) {
     return myProvider.languageModel(modelId);
   }
-
-  const isReasoningModel =
-    modelId.endsWith("-thinking") ||
-    (modelId.includes("reasoning") && !modelId.includes("non-reasoning"));
-
-  if (isReasoningModel) {
-    const gatewayModelId = modelId.replace(THINKING_SUFFIX_REGEX, "");
-
-    return wrapLanguageModel({
-      model: gateway.languageModel(gatewayModelId),
-      middleware: extractReasoningMiddleware({ tagName: "thinking" }),
-    });
-  }
-
-  return gateway.languageModel(modelId);
+  return deepseek(resolveDeepSeekModelId(modelId));
 }
 
 export function getTitleModel() {
   if (isTestEnvironment && myProvider) {
     return myProvider.languageModel("title-model");
   }
-  return gateway.languageModel("google/gemini-2.5-flash-lite");
+  return deepseek("deepseek-chat");
 }
 
 export function getArtifactModel() {
   if (isTestEnvironment && myProvider) {
     return myProvider.languageModel("artifact-model");
   }
-  return gateway.languageModel("anthropic/claude-haiku-4.5");
+  return deepseek("deepseek-chat");
 }

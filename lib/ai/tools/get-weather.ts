@@ -68,7 +68,28 @@ export const getWeather = tool({
       `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`
     );
 
+    if (!response.ok) {
+      return {
+        error: `Weather service responded with ${response.status}. Please try again later.`,
+      };
+    }
+
     const weatherData = await response.json();
+
+    if (!weatherData?.current || !weatherData?.hourly || !weatherData?.daily) {
+      return {
+        error: "Weather data is unavailable for this location.",
+      };
+    }
+
+    if (
+      !Array.isArray(weatherData.hourly?.temperature_2m) ||
+      weatherData.hourly.temperature_2m.length === 0
+    ) {
+      return {
+        error: "Hourly temperature data is unavailable for this location.",
+      };
+    }
 
     if ("city" in input) {
       weatherData.cityName = input.city;
