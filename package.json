@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "tsx lib/db/migrate && next build",
+    "build": "tsx lib/db/migrate && cross-env NEXT_DISABLE_TURBOPACK=1 NODE_ENV=production next build",
     "start": "next start",
     "lint": "ultracite check",
     "format": "ultracite fix",
@@ -113,6 +113,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "cross-env": "^7.0.3",
     "drizzle-kit": "^0.25.0",
     "postcss": "^8",
     "tailwindcss": "^4.1.13",

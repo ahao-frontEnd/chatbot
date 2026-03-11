@@ -1,3 +1,5 @@
+"use client";
+
 import { memo } from "react";
 import { toast } from "sonner";
 import { useArtifact } from "@/hooks/use-artifact";

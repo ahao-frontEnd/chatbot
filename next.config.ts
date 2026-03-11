@@ -2,7 +2,7 @@ import { withBotId } from "botid/next/config";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
+  cacheComponents: false,
   images: {
     remotePatterns: [
       {
