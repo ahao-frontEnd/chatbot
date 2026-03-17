@@ -65,7 +65,13 @@ export async function POST(request: Request) {
     const { id, message, messages, selectedChatModel, selectedVisibilityType } =
       requestBody;
 
-    const [botResult, session] = await Promise.all([checkBotId(), auth()]);
+    const shouldCheckBotId =
+      Boolean(process.env.VERCEL) || Boolean(process.env.VERCEL_ENV);
+
+    const [botResult, session] = await Promise.all([
+      shouldCheckBotId ? checkBotId() : Promise.resolve({ isBot: false }),
+      auth(),
+    ]);
 
     if (botResult.isBot) {
       return new ChatbotError("unauthorized:chat").toResponse();
