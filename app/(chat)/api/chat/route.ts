@@ -104,6 +104,27 @@ export async function POST(request: Request) {
     let messagesFromDb: DBMessage[] = [];
     let titlePromise: Promise<string> | null = null;
 
+    // Extract base64 from file parts and create newMessage 
+    let base64Value: string | undefined;
+    const newParts = message?.parts.map((part) => {
+      if (
+        part.type === "file" &&
+        "base64" in part &&
+        typeof part.base64 === "string"
+      ) {
+        base64Value = part.base64;
+        // @ts-ignore Create a new text part 
+        return { type: "text", text: `<${part.name as string}>` };
+      }
+      return part;
+    });
+
+    const newMessage: ChatMessage = {
+      ...message,
+      // @ts-ignore 
+      parts: newParts,
+    };
+
     if (chat) {
       if (chat.userId !== session.user.id) {
         return new ChatbotError("forbidden:chat").toResponse();
@@ -118,12 +139,12 @@ export async function POST(request: Request) {
         title: "New chat",
         visibility: selectedVisibilityType,
       });
-      titlePromise = generateTitleFromUserMessage({ message });
+      titlePromise = generateTitleFromUserMessage({ message: newMessage });
     }
 
     const uiMessages = isToolApprovalFlow
       ? (messages as ChatMessage[])
-      : [...convertToUIMessages(messagesFromDb), message as ChatMessage];
+      : [...convertToUIMessages(messagesFromDb), newMessage as ChatMessage];
 
     const { longitude, latitude, city, country } = geolocation(request);
 
@@ -139,9 +160,9 @@ export async function POST(request: Request) {
         messages: [
           {
             chatId: id,
-            id: message.id,
+            id: newMessage.id,
             role: "user",
-            parts: message.parts,
+            parts: newMessage.parts,
             attachments: [],
             createdAt: new Date(),
           },
