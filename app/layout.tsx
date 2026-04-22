@@ -5,9 +5,9 @@ import "./globals.css";
 import { AppProviders } from "@/components/app-providers";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://chat.vercel.ai"),
-  title: "Next.js Chatbot Template",
-  description: "Next.js chatbot template using the AI SDK.",
+  metadataBase: new URL("https://ningzhi.chat"),
+  title: "ning 面试官 Agent",
+  description: "ning 面试官 Agent 是基于 Next.js 和 AI SDK 构建的智能面试官，可以优化简历和模拟面试",
 };
 
 export const viewport = {

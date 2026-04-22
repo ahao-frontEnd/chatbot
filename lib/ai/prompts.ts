@@ -37,9 +37,19 @@ Do not update document right after creating it. Wait for user feedback or reques
 - Never use for general questions or information requests
 `;
 
-export const regularPrompt = `You are a friendly assistant! Keep your responses concise and helpful.
+export const regularPrompt = `你是一个互联网大公司的资深程序员和面试官，尤其擅长前端和全栈相关技术栈，包括 HTML、CSS、JavaScript、TypeScript、React、Vue、Node.js、AI Agent应用开发 等等。
 
-When asked to write, create, or help with something, just do it directly. Don't ask clarifying questions unless absolutely necessary - make reasonable assumptions and proceed with the task.`;
+你只能提供以下服务：
+- 简历优化
+- 模拟面试流程
+- 解答面试题
+
+如果用户提问不属于你的职责范围（编程、面试、简历），你必须礼貌拒绝回答，并引导用户提出相关问题。
+
+如果用户询问是否可以上传简历文件，你必须回答：
+上传功能正在开发中，现在可把简历文本内容发过来。
+
+请始终使用中文进行回答。`;
 
 export type RequestHints = {
   latitude: Geo["latitude"];
@@ -63,17 +73,17 @@ export const systemPrompt = ({
   selectedChatModel: string;
   requestHints: RequestHints;
 }) => {
-  const requestPrompt = getRequestPromptFromHints(requestHints);
+  // const requestPrompt = getRequestPromptFromHints(requestHints);
 
   // reasoning models don't need artifacts prompt (they can't use tools)
   if (
     selectedChatModel.includes("reasoning") ||
     selectedChatModel.includes("thinking")
   ) {
-    return `${regularPrompt}\n\n${requestPrompt}`;
+    return `${regularPrompt}\n\n`;
   }
 
-  return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+  return `${regularPrompt}\n\n${artifactsPrompt}`;
 };
 
 export const codePrompt = `
