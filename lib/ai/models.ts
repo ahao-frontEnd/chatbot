@@ -1,6 +1,3 @@
-// Curated list of top models from Vercel AI Gateway
-export const DEFAULT_CHAT_MODEL = "openai/gpt-4.1-mini";
-
 export type ChatModel = {
   id: string;
   name: string;
@@ -27,6 +24,17 @@ export const chatModels: ChatModel[] = [
 
 // Group models by provider for UI
 export const allowedModelIds = new Set(chatModels.map((m) => m.id));
+export const DEFAULT_CHAT_MODEL = chatModels[0]?.id ?? "deepseek/deepseek-chat";
+
+export function isAllowedChatModel(
+  modelId: string | undefined
+): modelId is string {
+  if (!modelId) {
+    return false;
+  }
+
+  return allowedModelIds.has(modelId);
+}
 
 export const modelsByProvider = chatModels.reduce(
   (acc, model) => {
