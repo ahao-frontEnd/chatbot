@@ -10,6 +10,9 @@ import {
 import type { Session } from "next-auth";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
 import { getLanguageModel } from "@/lib/ai/providers";
+import { classifyIntentNode } from "@/lib/ai/agent/classify";
+import { runMockInterviewAgent } from "@/lib/ai/agent/mock-interview";
+import { runResumeOptAgent } from "@/lib/ai/agent/resume-opt";
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
@@ -140,37 +143,53 @@ export async function runChatAgent({
   const stream = createUIMessageStream({
     originalMessages: isToolApprovalFlow ? uiMessages : undefined,
     execute: async ({ writer: dataStream }) => {
-      const result = streamText({
-        model: getLanguageModel(selectedChatModel),
-        system: systemPrompt({ selectedChatModel, requestHints }),
+      const classification = await classifyIntentNode({
         messages: modelMessages,
-        stopWhen: stepCountIs(5),
-        experimental_activeTools: reasoningModel
-          ? []
-          : [
-              "getWeather",
-              "createDocument",
-              "updateDocument",
-              "requestSuggestions",
-            ],
-        providerOptions: reasoningModel
-          ? {
-              anthropic: {
-                thinking: { type: "enabled", budgetTokens: 10_000 },
-              },
-            }
-          : undefined,
-        tools: {
-          getWeather,
-          createDocument: createDocument({ session, dataStream }),
-          updateDocument: updateDocument({ session, dataStream }),
-          requestSuggestions: requestSuggestions({ session, dataStream }),
-        },
-        experimental_telemetry: {
-          isEnabled: isProductionEnvironment,
-          functionId: "stream-text",
-        },
+        modelId: selectedChatModel,
       });
+      console.log('识别到意图为： ', classification.category)
+      const result =
+        classification.category === "resume_opt"
+          ? runResumeOptAgent({
+              messages: modelMessages,
+              modelId: selectedChatModel,
+            })
+          : classification.category === "mock_interview"
+            ? runMockInterviewAgent({
+                messages: modelMessages,
+                modelId: selectedChatModel,
+              })
+            : streamText({
+                model: getLanguageModel(selectedChatModel),
+                system: systemPrompt({ selectedChatModel, requestHints }),
+                messages: modelMessages,
+                stopWhen: stepCountIs(5),
+                experimental_activeTools: reasoningModel
+                  ? []
+                  : [
+                      "getWeather",
+                      "createDocument",
+                      "updateDocument",
+                      "requestSuggestions",
+                    ],
+                providerOptions: reasoningModel
+                  ? {
+                      anthropic: {
+                        thinking: { type: "enabled", budgetTokens: 10_000 },
+                      },
+                    }
+                  : undefined,
+                tools: {
+                  getWeather,
+                  createDocument: createDocument({ session, dataStream }),
+                  updateDocument: updateDocument({ session, dataStream }),
+                  requestSuggestions: requestSuggestions({ session, dataStream }),
+                },
+                experimental_telemetry: {
+                  isEnabled: isProductionEnvironment,
+                  functionId: "stream-text",
+                },
+              });
 
       dataStream.merge(result.toUIMessageStream({ sendReasoning: reasoningModel }));
 
